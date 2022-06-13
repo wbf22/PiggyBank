@@ -6,11 +6,14 @@ package com.fernwebsites.piggybank;
 
 import com.fernwebsites.piggybank.Utility.KeyStoreManager;
 import com.fernwebsites.piggybank.Utility.UserSession;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.event.DocumentEvent;
@@ -24,6 +27,11 @@ import javax.swing.table.TableModel;
  */
 public class Bank extends javax.swing.JFrame {
     private UserSession userSession;
+    
+    //headers for the table
+    private String[] columns = new String[] {
+        "Service", "Username", "Password", "Note"
+    };
 
     /**
      * Creates new form Bank
@@ -38,15 +46,41 @@ public class Bank extends javax.swing.JFrame {
         Object[][] pairs = getPasswordUserNamePairs();
         userSession.setData(pairs);
         
-        //headers for the table
-        String[] columns = new String[] {
-            "Service", "Username", "Password", "Note"
-        };
-         
-        
         //create table with data
         TableModel model = new DefaultTableModel(pairs, columns);
         jTable1.setModel(model);
+        
+        jTextField1.getDocument().addDocumentListener(new DocumentListener() {
+            public void changedUpdate(DocumentEvent e) {
+              filter();
+            }
+            public void removeUpdate(DocumentEvent e) {
+              filter();
+            }
+            public void insertUpdate(DocumentEvent e) {
+              filter();
+            }
+
+            public void filter() {
+                if (userSession != null && userSession.getData() != null) {
+                    Object[][] data = userSession.getData();
+                    List<Object[]> filteredData = new ArrayList<>();
+
+                    
+                    for (Object[] d : data) {
+                        String service = (String) d[0];
+                        if (service.toLowerCase().contains(jTextField1.getText().toLowerCase())){
+                            filteredData.add(d);
+                        }
+                    }
+
+                    //create table with data
+                    DefaultTableModel model = new DefaultTableModel(filteredData.stream().toArray(Object[][]::new), columns);
+                    jTable1.setModel(model);
+
+                }                                           
+            }
+          }); 
         
     }
     
@@ -71,8 +105,6 @@ public class Bank extends javax.swing.JFrame {
             newPairs.add(entry);
             newPairsArray = new Object[pairs.length + 1][4];
             newPairsArray = newPairs.toArray(newPairsArray);
-
-            
         }
         
         TableModel model = new DefaultTableModel(newPairsArray, columns);
@@ -80,9 +112,14 @@ public class Bank extends javax.swing.JFrame {
 
         userSession.setData(newPairsArray);
         boolean successfullyStored = KeyStoreManager.storeUserData(userSession);
+        
         if (!successfullyStored) {
             System.out.println("error adding new entry");
             userSession.setData(pairs);
+            model = new DefaultTableModel(pairs, columns);
+            jTable1.setModel(model);
+        } else {
+            updateSavedTag();
         }
         
     }
@@ -92,6 +129,12 @@ public class Bank extends javax.swing.JFrame {
         return KeyStoreManager.getUserData(userSession);
     }
 
+    private void updateSavedTag(){
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("HH:mm a ss");
+        LocalDateTime now = LocalDateTime.now();  
+        jLabel3.setText("Saved " + dtf.format(now) + " sec");
+    }
+    
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -107,6 +150,9 @@ public class Bank extends javax.swing.JFrame {
         jButton1 = new javax.swing.JButton();
         jTextField1 = new javax.swing.JTextField();
         jLabel2 = new javax.swing.JLabel();
+        jButton2 = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        jButton3 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -153,6 +199,20 @@ public class Bank extends javax.swing.JFrame {
 
         jLabel2.setText("Filter");
 
+        jButton2.setText("Remove");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+
+        jButton3.setText("Sign Out And Save");
+        jButton3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton3ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -162,25 +222,36 @@ public class Bank extends javax.swing.JFrame {
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
                 .addContainerGap())
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(219, 219, 219)
-                        .addComponent(jLabel2))
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(121, 121, 121)
-                            .addComponent(jLabel1))
-                        .addGroup(layout.createSequentialGroup()
-                            .addGap(155, 155, 155)
-                            .addComponent(jButton1))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 41, Short.MAX_VALUE)
+                        .addGap(139, 139, 139)
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 72, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(jLabel2)
+                        .addGap(27, 27, 27)))
                 .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(58, 58, 58))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(147, 147, 147)
+                .addComponent(jButton1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jButton2)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel3, javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jButton3, javax.swing.GroupLayout.Alignment.TRAILING))
+                .addGap(16, 16, 16))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(40, 40, 40)
+                .addGap(12, 12, 12)
+                .addComponent(jButton3)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel1)
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 239, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -188,9 +259,13 @@ public class Bank extends javax.swing.JFrame {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel2))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 76, Short.MAX_VALUE)
-                .addComponent(jButton1)
-                .addGap(32, 32, 32))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 92, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(jButton2))
+                .addGap(10, 10, 10)
+                .addComponent(jLabel3)
+                .addContainerGap())
         );
 
         pack();
@@ -208,34 +283,40 @@ public class Bank extends javax.swing.JFrame {
 
     private void jTextField1PropertyChange(java.beans.PropertyChangeEvent evt) {//GEN-FIRST:event_jTextField1PropertyChange
         
+    }//GEN-LAST:event_jTextField1PropertyChange
+
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+        int selected_row = jTable1.getSelectedRow();
         
-        if (userSession != null && userSession.getData() != null) {
-            System.out.println("called");
-                Object[][] data = userSession.getData();
-                Object[][] filteredData = new Object[data.length][];
-
-                int cntr = 0;
-                for (Object[] d : data) {
-                    for (Object s : data) {
-                        String str = (String) s;
-                        if (str.contains(jTextField1.getText())){
-                            filteredData[cntr] = d;
-                            cntr++;
-                            break;
-                        }
-                    }
-                }
-
-                //headers for the table
-                String[] columns = new String[] {
-                    "Service", "Username", "Password", "Note"
-                };
-                //create table with data
-                TableModel model = new DefaultTableModel(filteredData, columns);
-                jTable1.setModel(model);
+        List<Object[]> newD = new ArrayList<>();    
+        Object[][] oldData = userSession.getData();
+        for (int i = 0; i < oldData.length; i++) {
+            if (i != selected_row){
+                newD.add(oldData[i]);
+            }
         }
         
-    }//GEN-LAST:event_jTextField1PropertyChange
+        Object[][] newData = newD.stream().toArray(Object[][]::new);
+        
+        jTable1.setModel(new DefaultTableModel(newData, columns));
+        userSession.setData(newData);
+        boolean success = KeyStoreManager.storeUserData(userSession);
+        if (success) {
+            updateSavedTag();
+        }
+        
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        KeyStoreManager.storeUserData(userSession);
+        
+        UserSession newUserSession = new UserSession();
+        LockScreen lockscreen = new LockScreen(newUserSession);
+        lockscreen.setLocationRelativeTo(null);
+        lockscreen.setVisible(true);
+        
+        this.dispose();
+    }//GEN-LAST:event_jButton3ActionPerformed
 
     /**
      * @param args the command line arguments
@@ -274,8 +355,11 @@ public class Bank extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JButton jButton3;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JTextField jTextField1;
