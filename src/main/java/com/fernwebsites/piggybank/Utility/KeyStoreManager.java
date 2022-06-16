@@ -37,11 +37,13 @@ public class KeyStoreManager {
    
     public static final int GCM_TAG_LENGTH = 16;
     
+    private static String PATH = System.getenv("APPDATA") + "\\PiggyBank\\";
+    
     
     private static Key getKey(UserSession userSession) {
         try{
             KeyStore keyStore = KeyStore.getInstance("PKCS12");
-            keyStore.load(new FileInputStream(userSession.getUserName() + ".p12"), userSession.getPassword().toCharArray()); 
+            keyStore.load(new FileInputStream(PATH + userSession.getUserName() + ".p12"), userSession.getPassword().toCharArray()); 
             return keyStore.getKey("master", userSession.getPassword().toCharArray());
         } catch(Exception ex) {
             return null;
@@ -64,7 +66,7 @@ public class KeyStoreManager {
                 new PasswordProtection(userSession.getPassword().toCharArray(),
                     "PBEWithHmacSHA512AndAES_256",
                     new PBEParameterSpec(salt, 100_000)));
-            keyStore.store(new FileOutputStream(userSession.getUserName() + ".p12"), userSession.getPassword().toCharArray());
+            keyStore.store(new FileOutputStream(PATH + userSession.getUserName() + ".p12"), userSession.getPassword().toCharArray());
 
             return key;
         } catch(Exception ex) {
@@ -89,7 +91,7 @@ public class KeyStoreManager {
             byte[] encryptedBytes = cipher.doFinal(getAsBytes(userSession.getData()));
             
             //write the iv
-            File data = new File(userSession.getUserName() + "Data");
+            File data = new File(PATH + userSession.getUserName() + "Data");
             FileOutputStream fileOutputStream;
             fileOutputStream = new FileOutputStream(data);
             fileOutputStream.write(iv);
@@ -121,7 +123,7 @@ public class KeyStoreManager {
         
         
         try {
-            File data = new File(userSession.getUserName() + "Data");
+            File data = new File(PATH + userSession.getUserName() + "Data");
             FileInputStream fileInputStream = new FileInputStream(data);
             byte[] iv = new byte[GCM_IV_LENGTH];
             fileInputStream.read(iv);

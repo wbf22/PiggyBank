@@ -6,6 +6,8 @@
 package com.fernwebsites.piggybank;
 
 import com.fernwebsites.piggybank.Utility.UserSession;
+//import com.formdev.flatlaf.FlatLightLaf;
+import java.io.File;
 import javax.swing.UIManager;
 
 
@@ -17,7 +19,13 @@ public class PiggyBank {
     
 
     public static void main(String[] args) {
+        //Main-Class: com.fernwebsites.piggybank.PiggyBank
         System.out.println("Hello World!");
+        
+        try {
+            UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+        } catch (Exception ex) {
+        }
         
         UserSession userSession = new UserSession();
         LockScreen lockscreen = new LockScreen(userSession);
@@ -26,6 +34,10 @@ public class PiggyBank {
         
         UIManager.put("Button.defaultButtonFollowsFocus", Boolean.TRUE);
         
+        File theDir = new File(System.getenv("APPDATA") + "\\PiggyBank\\");
+        if (!theDir.exists()){
+            theDir.mkdirs();
+        }
         
     }
             

@@ -28,6 +28,7 @@ public class UserSession {
     private SecureRandom random;
     private Object[][] data;
     private Key key;
+    private String PATH = System.getenv("APPDATA") + "\\PiggyBank\\";
 
     public UserSession() {
         random = new SecureRandom();
@@ -43,8 +44,8 @@ public class UserSession {
     public int login(String userName, String password) {
         
         try {
-            File user = new File(userName);
-            File salt = new File(userName + "Salt");
+            File user = new File(PATH + userName);
+            File salt = new File(PATH + userName + "Salt");
             if (user.exists() && salt.exists()){
                 this.userName = userName;
                 this.password = password;
@@ -91,8 +92,8 @@ public class UserSession {
     public int createUser(String userName, String password){
         
         try {
-            File user = new File(userName);
-            File salt = new File(userName + "Salt");
+            File user = new File(PATH + userName);
+            File salt = new File(PATH + userName + "Salt");
             this.userName = userName;
             this.password = password;
 
